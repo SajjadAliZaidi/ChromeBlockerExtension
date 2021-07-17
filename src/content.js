@@ -30,24 +30,22 @@ const LOW_CONFIDENCE_THRESHOLD = 0.1;
  *     of objects, each with a prediction class and score
  */
 function textContentFromPrediction(predictions) {
-  if (!predictions || predictions.length < 1) {
-    return `No prediction 🙁`;
-  }
-  // Confident.
-  if (predictions[0].probability >= HIGH_CONFIDENCE_THRESHOLD) {
-    return `😄 ${predictions[0].className}!`;
-  }
-  // Not Confident.
-  if (predictions[0].probability >= LOW_CONFIDENCE_THRESHOLD &&
-      predictions[0].probability < HIGH_CONFIDENCE_THRESHOLD) {
-    return `${predictions[0].className}?...\n Maybe ${
-        predictions[1].className}?`;
-  }
-  // Very not confident.
-  if (predictions[0].probability < LOW_CONFIDENCE_THRESHOLD) {
-    return `😕  ${predictions[0].className}????...\n Maybe ${
-        predictions[1].className}????`;
-  }
+    if (!predictions || predictions.length < 1) {
+        return `No prediction 🙁`;
+    }
+    // Confident.
+    if (predictions[0].probability >= HIGH_CONFIDENCE_THRESHOLD) {
+        return `😄 ${predictions[0].className}!`;
+    }
+    // Not Confident.
+    if (predictions[0].probability >= LOW_CONFIDENCE_THRESHOLD &&
+        predictions[0].probability < HIGH_CONFIDENCE_THRESHOLD) {
+        return `${predictions[0].className}?...\n Maybe ${predictions[1].className}?`;
+    }
+    // Very not confident.
+    if (predictions[0].probability < LOW_CONFIDENCE_THRESHOLD) {
+        return `😕  ${predictions[0].className}????...\n Maybe ${predictions[1].className}????`;
+    }
 }
 
 /**
@@ -57,9 +55,9 @@ function textContentFromPrediction(predictions) {
  * @returns {HTMLElement[]} all img elements pointing to the provided srcUrl
  */
 function getImageElementsWithSrcUrl(srcUrl) {
-  const imgElArr = Array.from(document.getElementsByTagName('img'));
-  const filtImgElArr = imgElArr.filter(x => x.src === srcUrl);
-  return filtImgElArr;
+    const imgElArr = Array.from(document.getElementsByTagName('img'));
+    const filtImgElArr = imgElArr.filter(x => x.src === srcUrl);
+    return filtImgElArr;
 }
 
 /**
@@ -69,13 +67,34 @@ function getImageElementsWithSrcUrl(srcUrl) {
  * div.
  */
 function removeTextElements() {
-  const textDivs = document.getElementsByClassName(TEXT_DIV_CLASSNAME);
-  for (const div of textDivs) {
-    div.parentNode.removeChild(div);
-  }
+    const textDivs = document.getElementsByClassName(TEXT_DIV_CLASSNAME);
+    for (const div of textDivs) {
+        div.parentNode.removeChild(div);
+    }
 }
 
+MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
+var observer = new MutationObserver(function (mutations, observer) {
+    // fired when a mutation occurs
+    for (let i = 0; i < document.images.length; i++) {
+
+        const imgUrl = document.images[i] ? document.images[i].src : undefined;
+        // chrome.runtime.sendMessage({ message: "scan-image", imgUrl });
+        console.log("url:", imgUrl);
+        if (imgUrl)
+            chrome.runtime.sendMessage({ message: "scan-image", imgUrl: document.images[i].src });
+    }    // ...
+
+});
+
+// define what element should be observed by the observer
+// and what types of mutations trigger the callback
+observer.observe(document, {
+    subtree: true,
+    attributes: true
+    //...
+});
 
 /**
  *  Moves the provided imgNode into a container div, and adds a text div as a
@@ -85,32 +104,32 @@ function removeTextElements() {
  * @param {string} textContent What text to write on the image.
  */
 function addTextElementToImageNode(imgNode, textContent) {
-  const originalParent = imgNode.parentElement;
-  const container = document.createElement('div');
-  container.style.position = 'relative';
-  container.style.textAlign = 'center';
-  container.style.color = 'white';
-  const text = document.createElement('div');
-  text.className = 'tfjs_mobilenet_extension_text';
-  text.style.position = 'absolute';
-  text.style.top = '50%';
-  text.style.left = '50%';
-  text.style.transform = 'translate(-50%, -50%)';
-  text.style.fontSize = '34px';
-  text.style.fontFamily = 'Google Sans,sans-serif';
-  text.style.fontWeight = '700';
-  text.style.color = 'white';
-  text.style.lineHeight = '1em';
-  text.style['-webkit-text-fill-color'] = 'white';
-  text.style['-webkit-text-stroke-width'] = '1px';
-  text.style['-webkit-text-stroke-color'] = 'black';
-  // Add the containerNode as a peer to the image, right next to the image.
-  originalParent.insertBefore(container, imgNode);
-  // Move the imageNode to inside the containerNode;
-  container.appendChild(imgNode);
-  // Add the text node right after the image node;
-  container.appendChild(text);
-  text.textContent = textContent;
+    const originalParent = imgNode.parentElement;
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.textAlign = 'center';
+    container.style.color = 'white';
+    const text = document.createElement('div');
+    text.className = 'tfjs_mobilenet_extension_text';
+    text.style.position = 'absolute';
+    text.style.top = '50%';
+    text.style.left = '50%';
+    text.style.transform = 'translate(-50%, -50%)';
+    text.style.fontSize = '34px';
+    text.style.fontFamily = 'Google Sans,sans-serif';
+    text.style.fontWeight = '700';
+    text.style.color = 'white';
+    text.style.lineHeight = '1em';
+    text.style['-webkit-text-fill-color'] = 'white';
+    text.style['-webkit-text-stroke-width'] = '1px';
+    text.style['-webkit-text-stroke-color'] = 'black';
+    // Add the containerNode as a peer to the image, right next to the image.
+    originalParent.insertBefore(container, imgNode);
+    // Move the imageNode to inside the containerNode;
+    container.appendChild(imgNode);
+    // Add the text node right after the image node;
+    container.appendChild(text);
+    text.textContent = textContent;
 }
 
 // Add a listener to hear from the content.js page when the image is through
@@ -119,15 +138,16 @@ function addTextElementToImageNode(imgNode, textContent) {
 //
 // message: {action, url, predictions}
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message && message.action === 'IMAGE_CLICK_PROCESSED' && message.url &&
-      message.predictions) {
-    // Get the list of images with this srcUrl.
-    const imgElements = getImageElementsWithSrcUrl(message.url);
-    for (const imgNode of imgElements) {
-      const textContent = textContentFromPrediction(message.predictions);
-      addTextElementToImageNode(imgNode, textContent);
+    if (message && message.action === 'IMAGE_CLICK_PROCESSED' && message.url &&
+        message.predictions) {
+        // Get the list of images with this srcUrl.
+        const imgElements = getImageElementsWithSrcUrl(message.url);
+        for (const imgNode of imgElements) {
+            const textContent = textContentFromPrediction(message.predictions);
+            console.log({ "predict": message.predictions });
+            addTextElementToImageNode(imgNode, textContent);
+        }
     }
-  }
 });
 
 // Set up a listener to remove all annotations if the user clicks
@@ -138,7 +158,7 @@ window.addEventListener('click', clickHandler, false);
  * Removes text elements from DOM on a left click.
  */
 function clickHandler(mouseEvent) {
-  if (mouseEvent.button == 0) {
-    removeTextElements();
-  }
+    if (mouseEvent.button == 0) {
+        removeTextElements();
+    }
 }

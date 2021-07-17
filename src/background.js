@@ -36,10 +36,20 @@ const FIVE_SECONDS_IN_MS = 5000;
  *  Here it takes the url of the right-clicked image and the current tabId
  *  and forwards it to the imageClassifier's analyzeImage method.
  */
-function clickMenuCallback(info, tab) {
+function loadImageCallback(info, tab) {
     imageClassifier.analyzeImage(info.srcUrl, tab.id);
 }
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === 'scan-image') {
+        // sendResponse({ bImages: request.images });
+        chrome.tabs.query({ active: true, windowType: "normal", currentWindow: true }, function (tabs) {
+            console.log("id:", tabs[0].id);
+            imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
+            // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
+        });
+    }
+});
 /**
  * Adds a right-click menu option to trigger classifying the image.
  * The menu option should only appear when right-clicking an image.
@@ -47,8 +57,16 @@ function clickMenuCallback(info, tab) {
 chrome.contextMenus.create({
     title: 'Classify image with TensorFlow.js ',
     contexts: ['image'],
-    onclick: clickMenuCallback
+    onclick: loadImageCallback
 });
+
+// chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+//     console.log("here");
+//     if (changeInfo.status == 'complete' && tab.active) {
+//         let images = document.querySelectorAll('img');
+//         images.forEach(image => console.log(`image: ${image}, url: ${image.srcUrl}`));
+//     }
+// });
 
 /**
  * Async loads a mobilenet on construction.  Subsequently handles
