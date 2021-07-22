@@ -77,13 +77,14 @@ MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
 var observer = new MutationObserver(function (mutations, observer) {
     // fired when a mutation occurs
-    for (let i = 0; i < document.images.length; i++) {
+    const images = document.querySelectorAll('img:not(.tf-tested)');
+    for (let i = 0; i < images.length; i++) {
 
-        const imgUrl = document.images[i] ? document.images[i].src : undefined;
+        const imgUrl = images[i] ? images[i].src : undefined;
         // chrome.runtime.sendMessage({ message: "scan-image", imgUrl });
         console.log("url:", imgUrl);
         if (imgUrl)
-            chrome.runtime.sendMessage({ message: "scan-image", imgUrl: document.images[i].src });
+            chrome.runtime.sendMessage({ message: "scan-image", imgUrl: images[i].src });
     }    // ...
 
 });
@@ -126,6 +127,7 @@ function addTextElementToImageNode(imgNode, textContent) {
     // Add the containerNode as a peer to the image, right next to the image.
     originalParent.insertBefore(container, imgNode);
     // Move the imageNode to inside the containerNode;
+    imgNode.classList.add('tf-tested');
     container.appendChild(imgNode);
     // Add the text node right after the image node;
     container.appendChild(text);

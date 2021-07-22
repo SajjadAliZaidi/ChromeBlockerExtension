@@ -43,11 +43,13 @@ function loadImageCallback(info, tab) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'scan-image') {
         // sendResponse({ bImages: request.images });
-        chrome.tabs.query({ active: true, windowType: "normal", currentWindow: true }, function (tabs) {
-            console.log("id:", tabs[0].id);
-            imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
-            // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
-        });
+        // chrome.tabs.query({ active: true, windowType: "normal", lastFocusedWindow: true }, function (tabs) {
+        //     console.log("id:", tabs[0].id);
+        //     imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
+        //     // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
+        // });
+
+        imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
     }
 });
 /**
