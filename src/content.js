@@ -78,11 +78,13 @@ MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 var observer = new MutationObserver(function (mutations, observer) {
     // fired when a mutation occurs
     const images = document.querySelectorAll('img:not(.tf-tested)');
+    console.log(`count of images: ${images.length}`);
     for (let i = 0; i < images.length; i++) {
 
         const imgUrl = images[i] ? images[i].src : undefined;
+        images[i].classList.add('tf-tested');
         // chrome.runtime.sendMessage({ message: "scan-image", imgUrl });
-        console.log("url:", imgUrl);
+        // console.log("url:", imgUrl);
         if (imgUrl)
             chrome.runtime.sendMessage({ message: "scan-image", imgUrl: images[i].src });
     }    // ...
