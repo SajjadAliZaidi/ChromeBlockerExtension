@@ -45,6 +45,13 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
                 ]
             };
         }
+        if (blocking_stats.blockedSiteUrls) {
+            let countOfBlockedWebsites = blocking_stats.blockedSiteUrls.reduce(function countTotalBlockedWebsites(sum, curr_site) {
+                console.log(Object.keys(curr_site)[0]);
+                return sum + curr_site[Object.keys(curr_site)[0]];
+            }, 0);
+            chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
+        }
         localStorage.setItem('sharam-karo-stats', JSON.stringify(blocking_stats));
         return { cancel: true };
     },
@@ -54,7 +61,7 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
 
 // Where to load the model from.
 const MOBILENET_MODEL_TFHUB_URL =
-    'https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/classification/2'
+    'https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/2'
 // Size of the image expected by mobilenet.
 const IMAGE_SIZE = 224;
 // The minimum image size to consider classifying.  Below this limit the
@@ -131,9 +138,9 @@ class ImageClassifier {
             });
             const totalTime = Math.floor(performance.now() - startTime);
             console.log(`Model loaded and initialized in ${totalTime} ms...`);
-        } catch {
+        } catch (e) {
             console.error(
-                `Unable to load model from URL: ${MOBILENET_MODEL_TFHUB_URL}`);
+                `Unable to load model from URL: ${MOBILENET_MODEL_TFHUB_URL}. Error: ${e}`);
         }
     }
 
