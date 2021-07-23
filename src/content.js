@@ -82,7 +82,7 @@ var observer = new MutationObserver(function (mutations, observer) {
     for (let i = 0; i < images.length; i++) {
 
         const imgUrl = images[i] ? images[i].src : undefined;
-        images[i].classList.add('tf-tested');
+        // images[i].classList.add('tf-tested');
         // chrome.runtime.sendMessage({ message: "scan-image", imgUrl });
         // console.log("url:", imgUrl);
         if (imgUrl)

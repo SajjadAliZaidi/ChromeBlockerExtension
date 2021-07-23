@@ -18,6 +18,13 @@
 import 'babel-polyfill';
 import * as tf from '@tensorflow/tfjs';
 import { IMAGENET_CLASSES } from './imagenet_classes';
+import { blockedSiteUrls } from './blocked_sites';
+
+chrome.webRequest?.onBeforeSendHeaders.addListener(
+    (details) => ({ cancel: true }),
+    { urls: blockedSiteUrls },
+    ["blocking"]
+);
 
 // Where to load the model from.
 const MOBILENET_MODEL_TFHUB_URL =
