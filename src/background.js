@@ -17,7 +17,7 @@
 
 import 'babel-polyfill';
 import * as tf from '@tensorflow/tfjs';
-import { IMAGENET_CLASSES } from './imagenet_classes';
+import { IMAGENET_CLASSES_NEW as IMAGENET_CLASSES } from './imagenet_classes';
 import { blockedSiteUrls } from './blocked_sites';
 
 chrome.webRequest?.onBeforeSendHeaders.addListener(
@@ -50,7 +50,9 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
                 console.log(Object.keys(curr_site)[0]);
                 return sum + curr_site[Object.keys(curr_site)[0]];
             }, 0);
-            chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
+            if (typeof chrome.app.isInstalled !== 'undefined') {
+                chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
+            }
         }
         localStorage.setItem('sharam-karo-stats', JSON.stringify(blocking_stats));
         return { cancel: true };
@@ -61,15 +63,15 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
 
 // Where to load the model from.
 const MOBILENET_MODEL_TFHUB_URL =
-    'https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/2'
+    'https://ninja-cloud-functions-fbe3d.web.app/web_model_saved_graph/model.json'
 // Size of the image expected by mobilenet.
-const IMAGE_SIZE = 224;
+const IMAGE_SIZE = 160;
 // The minimum image size to consider classifying.  Below this limit the
 // extension will refuse to classify the image.
-const MIN_IMG_SIZE = 128;
+const MIN_IMG_SIZE = 160;
 
 // How many predictions to take.
-const TOPK_PREDICTIONS = 2;
+const TOPK_PREDICTIONS = 1;
 const FIVE_SECONDS_IN_MS = 5000;
 /**
  * What action to take when someone clicks the right-click menu option.
@@ -130,7 +132,7 @@ class ImageClassifier {
         const startTime = performance.now();
         try {
             this.model =
-                await tf.loadGraphModel(MOBILENET_MODEL_TFHUB_URL, { fromTFHub: true });
+                await tf.loadGraphModel(MOBILENET_MODEL_TFHUB_URL);
             // Warms up the model by causing intermediate tensor values
             // to be built and pushed to GPU.
             tf.tidy(() => {
@@ -173,7 +175,9 @@ class ImageClassifier {
                 }
                 const predictions = await this.predict(img);
                 message = { action: 'IMAGE_CLICK_PROCESSED', url, predictions };
-                chrome.tabs.sendMessage(tabId, message);
+                if (typeof chrome.app.isInstalled !== 'undefined') {
+                    chrome.tabs.sendMessage(tabId, message);
+                }
             },
             (reason) => {
                 console.error(`Failed to analyze: ${reason}`);
@@ -249,13 +253,15 @@ class ImageClassifier {
             const batched = normalized.reshape([1, IMAGE_SIZE, IMAGE_SIZE, 3]);
             startTime2 = performance.now();
             const output = this.model.predict(batched);
+            console.log('output: ', output);
             if (output.shape[output.shape.length - 1] === 1001) {
                 // Remove the very first logit (background noise).
                 return output.slice([0, 1], [-1, 1000]);
             } else if (output.shape[output.shape.length - 1] === 1000) {
                 return output;
             } else {
-                throw new Error('Unexpected shape...');
+                return output;
+                // throw new Error('Unexpected shape...');
             }
         });
 
