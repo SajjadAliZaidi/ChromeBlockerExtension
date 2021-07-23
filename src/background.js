@@ -21,7 +21,33 @@ import { IMAGENET_CLASSES } from './imagenet_classes';
 import { blockedSiteUrls } from './blocked_sites';
 
 chrome.webRequest?.onBeforeSendHeaders.addListener(
-    (details) => ({ cancel: true }),
+    (details) => {
+        let blocking_stats = localStorage.getItem('sharam-karo-stats');
+        const url_ = details.url;
+        console.log('url:', url_);
+        if (blocking_stats) {
+            console.log('details:', details);
+            blocking_stats = JSON.parse(blocking_stats);
+            const index = blocking_stats.blockedSites.findIndex(site => url_ in site);
+            if (index > -1) {
+                blocking_stats.blockedSites[index][url_]++;
+            } else {
+                blocking_stats.blockedSites.push({
+                    [url_]: 1
+                });
+            }
+        } else {
+            blocking_stats = {
+                blockedSites: [
+                    {
+                        [url_]: 1
+                    }
+                ]
+            };
+        }
+        localStorage.setItem('sharam-karo-stats', JSON.stringify(blocking_stats));
+        return { cancel: true };
+    },
     { urls: blockedSiteUrls },
     ["blocking"]
 );
