@@ -46936,8 +46936,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       console.log("stats: ".concat(blocking_stats));
       var countOfBlockedWebsites = 0;
 
-      if (blocking_stats.blockedSiteUrls) {
-        countOfBlockedWebsites = blocking_stats.blockedSiteUrls.reduce(function countTotalBlockedWebsites(sum, curr_site) {
+      if (blocking_stats.blockedSites) {
+        countOfBlockedWebsites = blocking_stats.blockedSites.reduce(function countTotalBlockedWebsites(sum, curr_site) {
           // console.log(Object.keys(curr_site)[0]);
           return sum + curr_site[Object.keys(curr_site)[0]];
         }, 0);
@@ -47238,7 +47238,7 @@ var ImageClassifier = /*#__PURE__*/function () {
                 console.log("values ".concat(values));
                 console.log("indices ".concat(indices));
                 _context5.next = 5;
-                return values.dataSync();
+                return values.data();
 
               case 5:
                 valuesArr = _context5.sent;
@@ -47247,17 +47247,13 @@ var ImageClassifier = /*#__PURE__*/function () {
 
               case 8:
                 indicesArr = _context5.sent;
-                _context5.next = 11;
-                return tf.sigmoid(indicesArr);
-
-              case 11:
-                indicesArr = _context5.sent;
+                // indicesArr = await tf.sigmoid(indicesArr);
                 console.log("indicesArr ".concat(indicesArr));
                 console.log("valuesArr ".concat(valuesArr));
                 topClassesAndProbs = [];
                 topClassesAndProbs.push({
-                  className: _imagenet_classes.IMAGENET_CLASSES_NEW[indicesArr.dataSync()],
-                  probability: valuesArr.dataSync()
+                  className: _imagenet_classes.IMAGENET_CLASSES_NEW[indicesArr[0]],
+                  probability: valuesArr[0]
                 }); // for (let i = 0; i <= topK; i++) {
                 //     topClassesAndProbs.push({
                 //         className: IMAGENET_CLASSES[indicesArr[i]],
@@ -47272,7 +47268,7 @@ var ImageClassifier = /*#__PURE__*/function () {
                 console.log('c&p:', topClassesAndProbs);
                 return _context5.abrupt("return", topClassesAndProbs);
 
-              case 18:
+              case 15:
               case "end":
                 return _context5.stop();
             }

@@ -66,8 +66,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             blocking_stats = JSON.parse(blocking_stats);
             console.log(`stats: ${blocking_stats}`);
             let countOfBlockedWebsites = 0;
-            if (blocking_stats.blockedSiteUrls) {
-                countOfBlockedWebsites = blocking_stats.blockedSiteUrls.reduce(function countTotalBlockedWebsites(sum, curr_site) {
+            if (blocking_stats.blockedSites) {
+                countOfBlockedWebsites = blocking_stats.blockedSites.reduce(function countTotalBlockedWebsites(sum, curr_site) {
                     // console.log(Object.keys(curr_site)[0]);
                     return sum + curr_site[Object.keys(curr_site)[0]];
                 }, 0);
@@ -236,16 +236,16 @@ class ImageClassifier {
         const { values, indices } = tf.topk(logits, topK, true);
         console.log(`values ${values}`);
         console.log(`indices ${indices}`);
-        let valuesArr = await values.dataSync();
+        let valuesArr = await values.data();
         // valuesArr = await tf.sigmoid(valuesArr);
         let indicesArr = await indices.data();
-        indicesArr = await tf.sigmoid(indicesArr);
+        // indicesArr = await tf.sigmoid(indicesArr);
         console.log(`indicesArr ${indicesArr}`);
         console.log(`valuesArr ${valuesArr}`);
         const topClassesAndProbs = [];
         topClassesAndProbs.push({
-            className: IMAGENET_CLASSES[indicesArr.dataSync()],
-            probability: valuesArr.dataSync()
+            className: IMAGENET_CLASSES[indicesArr[0]],
+            probability: valuesArr[0]
         })
 
         // for (let i = 0; i <= topK; i++) {
