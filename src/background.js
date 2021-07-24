@@ -80,7 +80,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Where to load the model from.
 const MOBILENET_MODEL_TFHUB_URL =
-    'https://ninja-cloud-functions-fbe3d.web.app/web_model_graph/model.json'
+    'https://ninja-cloud-functions-fbe3d.web.app/web_model_saved_graph/model.json'
 // Size of the image expected by mobilenet.
 const IMAGE_SIZE = 160;
 // The minimum image size to consider classifying.  Below this limit the
@@ -234,23 +234,31 @@ class ImageClassifier {
      */
     async getTopKClasses(logits, topK) {
         const { values, indices } = tf.topk(logits, topK, true);
-        // console.log(`values ${indices}`);
-        // console.log(`indices ${values}`);
-        const valuesArr = await values.data();
-        const indicesArr = await indices.data();
-        // console.log(`indicesArr ${indicesArr}`);
-        // console.log(`valuesArr ${valuesArr}`);
+        console.log(`values ${values}`);
+        console.log(`indices ${indices}`);
+        let valuesArr = await values.dataSync();
+        // valuesArr = await tf.sigmoid(valuesArr);
+        let indicesArr = await indices.data();
+        indicesArr = await tf.sigmoid(indicesArr);
+        console.log(`indicesArr ${indicesArr}`);
+        console.log(`valuesArr ${valuesArr}`);
         const topClassesAndProbs = [];
-        for (let i = 0; i <= topK; i++) {
-            topClassesAndProbs.push({
-                className: IMAGENET_CLASSES[indicesArr[i]],
-                probability: valuesArr[i]
-            })
-            // topClassesAndProbs.push({
-            //     className: valuesArr[i] > 1 ? 'Porn' : 'Safe',
-            //     probability: valuesArr[i]
-            // })
-        }
+        topClassesAndProbs.push({
+            className: IMAGENET_CLASSES[indicesArr.dataSync()],
+            probability: valuesArr.dataSync()
+        })
+
+        // for (let i = 0; i <= topK; i++) {
+        //     topClassesAndProbs.push({
+        //         className: IMAGENET_CLASSES[indicesArr[i]],
+        //         probability: valuesArr[i]
+        //     })
+        //     // topClassesAndProbs.push({
+        //     //     className: valuesArr[i] > 1 ? 'Porn' : 'Safe',
+        //     //     probability: valuesArr[i]
+        //     // })
+        // }
+        console.log('c&p:', topClassesAndProbs);
         return topClassesAndProbs;
     }
 

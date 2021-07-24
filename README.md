@@ -14,7 +14,7 @@ yarn build
 
 To install the unpacked extension in chrome, follow the [instructions here](https://developer.chrome.com/extensions/getstarted).  Briefly, navigate to `chrome://extensions`, make sure that the `Developer mode` switch is turned on in the upper right, and click `Load Unpacked`.  Then select the appropriate directory (the `dist` directory containing `manifest.json`);
 
-If it worked you should see an icon for the `TF.js mobilenet` Chrome extension.
+If it worked you should see an icon for the `Sharam Karo 2.0` Chrome extension.
 
 ![install page illustration](./install.png "install page")
 
