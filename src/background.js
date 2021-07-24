@@ -234,23 +234,22 @@ class ImageClassifier {
      */
     async getTopKClasses(logits, topK) {
         const { values, indices } = tf.topk(logits, topK, true);
-        console.log(`values ${indices}`);
-        console.log(`indices ${values}`);
+        // console.log(`values ${indices}`);
+        // console.log(`indices ${values}`);
         const valuesArr = await values.data();
         const indicesArr = await indices.data();
-        console.log(`indicesArr ${indicesArr}`);
-        console.log(`valuesArr ${valuesArr}`);
+        // console.log(`indicesArr ${indicesArr}`);
+        // console.log(`valuesArr ${valuesArr}`);
         const topClassesAndProbs = [];
         for (let i = 0; i <= topK; i++) {
-            // topClassesAndProbs.push({
-            //     className: IMAGENET_CLASSES[indicesArr[i]],
-            //     probability: valuesArr[i]
-            // })
             topClassesAndProbs.push({
-                className: valuesArr[i] > 1 ? 'Porn' : 'Safe',
+                className: IMAGENET_CLASSES[indicesArr[i]],
                 probability: valuesArr[i]
             })
-
+            // topClassesAndProbs.push({
+            //     className: valuesArr[i] > 1 ? 'Porn' : 'Safe',
+            //     probability: valuesArr[i]
+            // })
         }
         return topClassesAndProbs;
     }
