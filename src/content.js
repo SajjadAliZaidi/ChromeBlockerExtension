@@ -35,16 +35,16 @@ function textContentFromPrediction(predictions) {
     }
     // Confident.
     if (predictions[0].probability >= HIGH_CONFIDENCE_THRESHOLD) {
-        return `😄 ${predictions[0].className}!`;
+        return `😄 ${predictions[0].className}! (${predictions[0].probability})`;
     }
     // Not Confident.
     if (predictions[0].probability >= LOW_CONFIDENCE_THRESHOLD &&
         predictions[0].probability < HIGH_CONFIDENCE_THRESHOLD) {
-        return `${predictions[0].className}?...\n Maybe ${predictions[1].className}?`;
+        return `${predictions[0].className} (${predictions[0].probability})?...\n Maybe ${predictions[1].className} (${predictions[1].probability})?`;
     }
     // Very not confident.
     if (predictions[0].probability < LOW_CONFIDENCE_THRESHOLD) {
-        return `😕  ${predictions[0].className}????...\n Maybe ${predictions[1].className}????`;
+        return `😕  ${predictions[0].className} (${predictions[0].probability})????...\n Maybe ${predictions[1].className} (${predictions[1].probability})????`;
     }
 }
 
@@ -151,7 +151,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const imgElements = getImageElementsWithSrcUrl(message.url);
         for (const imgNode of imgElements) {
             const textContent = textContentFromPrediction(message.predictions);
-            console.log({ "predict": message.predictions });
+            console.log({ "img": imgNode, "predict": message.predictions });
             addTextElementToImageNode(imgNode, textContent);
         }
     }

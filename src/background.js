@@ -22,6 +22,9 @@ import { blockedSiteUrls } from './blocked_sites';
 
 chrome.webRequest?.onBeforeSendHeaders.addListener(
     (details) => {
+        chrome.storage.sync.get(['sharam-karo-stats'], function (items) {
+            console.log('Stats retrieved', items);
+        });
         let blocking_stats = localStorage.getItem('sharam-karo-stats');
         const url_ = details.url;
         console.log('url:', url_);
@@ -45,21 +48,35 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
                 ]
             };
         }
-        if (blocking_stats.blockedSiteUrls) {
-            let countOfBlockedWebsites = blocking_stats.blockedSiteUrls.reduce(function countTotalBlockedWebsites(sum, curr_site) {
-                console.log(Object.keys(curr_site)[0]);
-                return sum + curr_site[Object.keys(curr_site)[0]];
-            }, 0);
-            if (typeof chrome.app.isInstalled !== 'undefined') {
-                chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
-            }
-        }
+        chrome.storage.sync.set({ 'sharam-karo-stats': JSON.stringify(blocking_stats) }, function () {
+            console.log('Stats saved');
+        });
         localStorage.setItem('sharam-karo-stats', JSON.stringify(blocking_stats));
         return { cancel: true };
     },
     { urls: blockedSiteUrls },
     ["blocking"]
 );
+
+// Code to commuicate to popup js with count of blocked websites
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === 'blocked-website-count-request') {
+        if (typeof chrome.app.isInstalled !== 'undefined') {
+            let blocking_stats = localStorage.getItem('sharam-karo-stats');
+            blocking_stats = JSON.parse(blocking_stats);
+            console.log(`stats: ${blocking_stats}`);
+            let countOfBlockedWebsites = 0;
+            if (blocking_stats.blockedSiteUrls) {
+                countOfBlockedWebsites = blocking_stats.blockedSiteUrls.reduce(function countTotalBlockedWebsites(sum, curr_site) {
+                    // console.log(Object.keys(curr_site)[0]);
+                    return sum + curr_site[Object.keys(curr_site)[0]];
+                }, 0);
+            }
+            console.log(`sending: ${countOfBlockedWebsites}`);
+            chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
+        }
+    }
+})
 
 // Where to load the model from.
 const MOBILENET_MODEL_TFHUB_URL =
@@ -217,11 +234,14 @@ class ImageClassifier {
      */
     async getTopKClasses(logits, topK) {
         const { values, indices } = tf.topk(logits, topK, true);
+        console.log(`values ${indices}`);
+        console.log(`indices ${values}`);
         const valuesArr = await values.data();
         const indicesArr = await indices.data();
         console.log(`indicesArr ${indicesArr}`);
+        console.log(`valuesArr ${valuesArr}`);
         const topClassesAndProbs = [];
-        for (let i = 0; i < topK; i++) {
+        for (let i = 0; i <= topK; i++) {
             topClassesAndProbs.push({
                 className: IMAGENET_CLASSES[indicesArr[i]],
                 probability: valuesArr[i]
@@ -254,15 +274,8 @@ class ImageClassifier {
             startTime2 = performance.now();
             const output = this.model.predict(batched);
             console.log('output: ', output);
-            if (output.shape[output.shape.length - 1] === 1001) {
-                // Remove the very first logit (background noise).
-                return output.slice([0, 1], [-1, 1000]);
-            } else if (output.shape[output.shape.length - 1] === 1000) {
-                return output;
-            } else {
-                return output;
-                // throw new Error('Unexpected shape...');
-            }
+            return output;
+            // throw new Error('Unexpected shape...');
         });
 
         // Convert logits to probabilities and class names.
