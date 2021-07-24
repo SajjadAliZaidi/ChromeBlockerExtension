@@ -80,7 +80,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Where to load the model from.
 const MOBILENET_MODEL_TFHUB_URL =
-    'https://ninja-cloud-functions-fbe3d.web.app/web_model_saved_graph/model.json'
+    'https://ninja-cloud-functions-fbe3d.web.app/web_model_graph/model.json'
 // Size of the image expected by mobilenet.
 const IMAGE_SIZE = 160;
 // The minimum image size to consider classifying.  Below this limit the
@@ -242,10 +242,15 @@ class ImageClassifier {
         console.log(`valuesArr ${valuesArr}`);
         const topClassesAndProbs = [];
         for (let i = 0; i <= topK; i++) {
+            // topClassesAndProbs.push({
+            //     className: IMAGENET_CLASSES[indicesArr[i]],
+            //     probability: valuesArr[i]
+            // })
             topClassesAndProbs.push({
-                className: IMAGENET_CLASSES[indicesArr[i]],
+                className: valuesArr[i] > 1 ? 'Porn' : 'Safe',
                 probability: valuesArr[i]
             })
+
         }
         return topClassesAndProbs;
     }
