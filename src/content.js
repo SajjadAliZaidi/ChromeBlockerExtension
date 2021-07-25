@@ -36,16 +36,16 @@ function textContentFromPrediction(predictions) {
     }
     // Confident.
     if (predictions[0].probability >= HIGH_CONFIDENCE_THRESHOLD) {
-        return `😄 ${predictions[0].className}! (${predictions[0].probability})`;
+        return `😄 ${predictions[0].className}! (${predictions[0].probability.toFixed(2)})`;
     }
     // Not Confident.
     if (predictions[0].probability >= LOW_CONFIDENCE_THRESHOLD &&
         predictions[0].probability < HIGH_CONFIDENCE_THRESHOLD) {
-        return `${predictions[0].className} (${predictions[0].probability})?...\n Maybe ${predictions[1].className} (${predictions[1].probability})?`;
+        return `${predictions[0].className} (${predictions[0].probability.toFixed(2)})?...\n Maybe ${predictions[1].className} (${predictions[1].probability.toFixed(2)})?`;
     }
     // Very not confident.
     if (predictions[0].probability < LOW_CONFIDENCE_THRESHOLD) {
-        return `😕  ${predictions[0].className} (${predictions[0].probability})????...\n Maybe ${predictions[1].className} (${predictions[1].probability})????`;
+        return `😕  ${predictions[0].className} (${predictions[0].probability.toFixed(2)})????...\n Maybe ${predictions[1].className} (${predictions[1].probability.toFixed(2)})????`;
     }
 }
 
@@ -113,19 +113,20 @@ observer.observe(document, {
 function addTextElementToImageNode(imgNode, textContent, className) {
     if (className == 'Porn') {
         if (typeof chrome.app.isInstalled !== 'undefined') {
-            chrome.runtime.sendMessage({ message: "increase-blocked-image-count" });
+            chrome.runtime.sendMessage({ message: "increase-blocked-image-count", imgNode });
         }
+        blockImageContent(imgNode);
     }
     const originalParent = imgNode.parentElement;
     const container = document.createElement('div');
     container.style.position = 'relative';
-    container.style.textAlign = 'center';
+    // container.style.textAlign = 'center';
     container.style.color = 'white';
     const text = document.createElement('div');
     text.className = 'tfjs_mobilenet_extension_text';
     text.style.position = 'absolute';
-    // text.style.top = '50%';
-    text.style.left = '50%';
+    text.style.top = '50%';
+    text.style.left = '15%';
     text.style.transform = 'translate(-50%, -50%)';
     text.style.fontSize = '34px';
     text.style.fontFamily = 'Google Sans,sans-serif';

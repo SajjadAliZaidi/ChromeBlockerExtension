@@ -28,6 +28,7 @@
             "https://*/*"
         ],
         "js": [
+            "src/ImageBlocker.js",
             "src/content.js"
         ],
         "all_frames": true,

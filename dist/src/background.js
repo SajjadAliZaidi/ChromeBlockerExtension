@@ -46155,6 +46155,7 @@ var ImageClassifier = /*#__PURE__*/function () {
 
                           case 5:
                             predictions = _context2.sent;
+                            console.log('img:', img);
                             message = {
                               action: 'IMAGE_CLICK_PROCESSED',
                               url: url,
@@ -46165,7 +46166,7 @@ var ImageClassifier = /*#__PURE__*/function () {
                               chrome.tabs.sendMessage(tabId, message);
                             }
 
-                          case 8:
+                          case 9:
                           case "end":
                             return _context2.stop();
                         }

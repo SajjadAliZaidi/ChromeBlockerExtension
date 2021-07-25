@@ -219,6 +219,7 @@ class ImageClassifier {
                     return;
                 }
                 const predictions = await this.predict(img);
+                console.log('img:', img);
                 message = { action: 'IMAGE_CLICK_PROCESSED', url, predictions };
                 if (typeof chrome.app.isInstalled !== 'undefined') {
                     chrome.tabs.sendMessage(tabId, message);
