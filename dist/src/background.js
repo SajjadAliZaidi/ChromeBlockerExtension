@@ -45886,6 +45886,30 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function incrementBlockedImageCount() {
+  chrome.storage.sync.get(['sharam-karo-stats'], function (items) {
+    console.log('Stats retrieved', items);
+  });
+  var blocking_stats = localStorage.getItem('sharam-karo-stats');
+
+  if (blocking_stats) {
+    blocking_stats = JSON.parse(blocking_stats);
+    blocking_stats.blockedImageCount++;
+  } else {
+    blocking_stats = {
+      blockedSites: [],
+      blockedImageCount: 1
+    };
+  }
+
+  chrome.storage.sync.set({
+    'sharam-karo-stats': JSON.stringify(blocking_stats)
+  }, function () {
+    console.log('Stats saved');
+  });
+  localStorage.setItem('sharam-karo-stats', JSON.stringify(blocking_stats));
+}
+
 (_chrome$webRequest = chrome.webRequest) === null || _chrome$webRequest === void 0 ? void 0 : _chrome$webRequest.onBeforeSendHeaders.addListener(function (details) {
   chrome.storage.sync.get(['sharam-karo-stats'], function (items) {
     console.log('Stats retrieved', items);
@@ -45908,7 +45932,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     }
   } else {
     blocking_stats = {
-      blockedSites: [_defineProperty({}, url_, 1)]
+      blockedSites: [_defineProperty({}, url_, 1)],
+      blockedImageCount: 0
     };
   }
 
@@ -45946,6 +45971,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         countOfBlockedWebsites: countOfBlockedWebsites
       });
     }
+  } else if (request.message === 'scan-image') {
+    imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
+  } else if (request.message === 'increase-blocked-image-count') {
+    incrementBlockedImageCount();
   }
 }); // Where to load the model from.
 
@@ -45966,23 +45995,23 @@ var FIVE_SECONDS_IN_MS = 5000;
 
 function loadImageCallback(info, tab) {
   imageClassifier.analyzeImage(info.srcUrl, tab.id);
-}
+} // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//     if (request.message === 'scan-image') {
+//         // sendResponse({ bImages: request.images });
+//         // chrome.tabs.query({ active: true, windowType: "normal", lastFocusedWindow: true }, function (tabs) {
+//         //     console.log("id:", tabs[0].id);
+//         //     imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
+//         //     // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
+//         // });
+//         imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
+//     }
+// });
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.message === 'scan-image') {
-    // sendResponse({ bImages: request.images });
-    // chrome.tabs.query({ active: true, windowType: "normal", lastFocusedWindow: true }, function (tabs) {
-    //     console.log("id:", tabs[0].id);
-    //     imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
-    //     // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
-    // });
-    imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
-  }
-});
 /**
  * Adds a right-click menu option to trigger classifying the image.
  * The menu option should only appear when right-clicking an image.
  */
+
 
 chrome.contextMenus.create({
   title: 'Classify image with TensorFlow.js ',
@@ -46249,7 +46278,7 @@ var ImageClassifier = /*#__PURE__*/function () {
                 console.log("valuesArr ".concat(valuesArr));
                 topClassesAndProbs = [];
                 topClassesAndProbs.push({
-                  className: _imagenet_classes.IMAGENET_CLASSES_NEW[indicesArr[0]],
+                  className: valuesArr[0] > 8.25 && valuesArr[0] < 8.43 ? 'Porn' : 'Safe',
                   probability: valuesArr[0]
                 }); // for (let i = 0; i <= topK; i++) {
                 //     topClassesAndProbs.push({

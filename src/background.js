@@ -20,6 +20,29 @@ import * as tf from '@tensorflow/tfjs';
 import { IMAGENET_CLASSES_NEW as IMAGENET_CLASSES } from './imagenet_classes';
 import { blockedSiteUrls } from './blocked_sites';
 
+function incrementBlockedImageCount() {
+    chrome.storage.sync.get(['sharam-karo-stats'], function (items) {
+        console.log('Stats retrieved', items);
+    });
+    let blocking_stats = localStorage.getItem('sharam-karo-stats');
+    if (blocking_stats) {
+        blocking_stats = JSON.parse(blocking_stats);
+        blocking_stats.blockedImageCount++
+    } else {
+        blocking_stats = {
+            blockedSites: [
+            ],
+            blockedImageCount: 1
+        };
+    }
+    chrome.storage.sync.set({ 'sharam-karo-stats': JSON.stringify(blocking_stats) }, function () {
+        console.log('Stats saved');
+    });
+    localStorage.setItem('sharam-karo-stats', JSON.stringify(blocking_stats));
+
+
+}
+
 chrome.webRequest?.onBeforeSendHeaders.addListener(
     (details) => {
         chrome.storage.sync.get(['sharam-karo-stats'], function (items) {
@@ -45,7 +68,8 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
                     {
                         [url_]: 1
                     }
-                ]
+                ],
+                blockedImageCount: 0
             };
         }
         chrome.storage.sync.set({ 'sharam-karo-stats': JSON.stringify(blocking_stats) }, function () {
@@ -75,6 +99,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             console.log(`sending: ${countOfBlockedWebsites}`);
             chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
         }
+    } else if (request.message === 'scan-image') {
+        imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
+    } else if (request.message === 'increase-blocked-image-count') {
+        incrementBlockedImageCount();
     }
 })
 
@@ -99,18 +127,18 @@ function loadImageCallback(info, tab) {
     imageClassifier.analyzeImage(info.srcUrl, tab.id);
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.message === 'scan-image') {
-        // sendResponse({ bImages: request.images });
-        // chrome.tabs.query({ active: true, windowType: "normal", lastFocusedWindow: true }, function (tabs) {
-        //     console.log("id:", tabs[0].id);
-        //     imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
-        //     // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
-        // });
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//     if (request.message === 'scan-image') {
+//         // sendResponse({ bImages: request.images });
+//         // chrome.tabs.query({ active: true, windowType: "normal", lastFocusedWindow: true }, function (tabs) {
+//         //     console.log("id:", tabs[0].id);
+//         //     imageClassifier.analyzeImage(request.imgUrl, tabs[0].id);
+//         //     // loadImageCallback({ srcUrl: request.imgUrl }, { id: tabs[0].id });
+//         // });
 
-        imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
-    }
-});
+//         imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
+//     }
+// });
 /**
  * Adds a right-click menu option to trigger classifying the image.
  * The menu option should only appear when right-clicking an image.
@@ -244,7 +272,7 @@ class ImageClassifier {
         console.log(`valuesArr ${valuesArr}`);
         const topClassesAndProbs = [];
         topClassesAndProbs.push({
-            className: IMAGENET_CLASSES[indicesArr[0]],
+            className: valuesArr[0] > 8.25 && valuesArr[0] < 8.43 ? 'Porn' : 'Safe',
             probability: valuesArr[0]
         })
 

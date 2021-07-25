@@ -14,8 +14,9 @@ chrome.storage.sync.get(['sharam-karo-stats'], function (blocking_stats) {
     }, 0);
 
     const countOfBlockedWebsites = blocking_stats.blockedSites ? blocking_stats.blockedSites.length : 0;
+    const blockedImageCount = blocking_stats.blockedImageCount ? blocking_stats.blockedImageCount : 0;
 
     document.querySelector('#access_attempt_count span').textContent = blockedWebsiteAccessAttemptCount;
     document.querySelector('#attepted_blocked_sites span').textContent = countOfBlockedWebsites;
-    document.querySelector('#blocked_image_count span').textContent = 0;
+    document.querySelector('#blocked_image_count span').textContent = blockedImageCount;
 });

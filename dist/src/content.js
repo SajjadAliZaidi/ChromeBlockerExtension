@@ -30,6 +30,7 @@ const LOW_CONFIDENCE_THRESHOLD = 0.1;
  *     of objects, each with a prediction class and score
  */
 function textContentFromPrediction(predictions) {
+    console.log(predictions[0].probability);
     if (!predictions || predictions.length < 1) {
         return `No prediction 🙁`;
     }
@@ -78,7 +79,7 @@ MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 var observer = new MutationObserver(function (mutations, observer) {
     // fired when a mutation occurs
     const images = document.querySelectorAll('img:not(.tf-tested)');
-    console.log(`count of images: ${images.length}`);
+    // console.log(`count of images: ${images.length}`);
     for (let i = 0; i < images.length; i++) {
 
         const imgUrl = images[i] ? images[i].src : undefined;
@@ -109,7 +110,12 @@ observer.observe(document, {
  * @param {HTMLElement} imgNode Which image node to write content on.
  * @param {string} textContent What text to write on the image.
  */
-function addTextElementToImageNode(imgNode, textContent) {
+function addTextElementToImageNode(imgNode, textContent, className) {
+    if (className == 'Porn') {
+        if (typeof chrome.app.isInstalled !== 'undefined') {
+            chrome.runtime.sendMessage({ message: "increase-blocked-image-count" });
+        }
+    }
     const originalParent = imgNode.parentElement;
     const container = document.createElement('div');
     container.style.position = 'relative';
@@ -118,7 +124,7 @@ function addTextElementToImageNode(imgNode, textContent) {
     const text = document.createElement('div');
     text.className = 'tfjs_mobilenet_extension_text';
     text.style.position = 'absolute';
-    text.style.top = '50%';
+    // text.style.top = '50%';
     text.style.left = '50%';
     text.style.transform = 'translate(-50%, -50%)';
     text.style.fontSize = '34px';
@@ -151,8 +157,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const imgElements = getImageElementsWithSrcUrl(message.url);
         for (const imgNode of imgElements) {
             const textContent = textContentFromPrediction(message.predictions);
-            console.log({ "img": imgNode, "predict": message.predictions });
-            addTextElementToImageNode(imgNode, textContent);
+            // console.log({ "img": imgNode, "predict": message.predictions });
+            addTextElementToImageNode(imgNode, textContent, message.predictions[0].className);
         }
     }
 });
