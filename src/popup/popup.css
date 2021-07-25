@@ -1,0 +1,35 @@
+html,
+body {
+    margin: 0%;
+    height: 100%;
+    min-width: 450px;
+    background-color: #EDEDED;
+    padding-top: 3px;
+}
+
+.card {
+    border: 0px;
+}
+
+.container-fluid {
+    height: 100vh;
+}
+
+.box {
+    height: 100vh;
+}
+
+.bg-primary {
+    background-color: #EDEDED!important;
+}
+
+.card-header {
+    /* color: white; */
+    background-color: #EDEDED;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.badge {
+    color: black;
+}
