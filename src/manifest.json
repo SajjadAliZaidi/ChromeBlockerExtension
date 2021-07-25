@@ -1,0 +1,44 @@
+{
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApAR3gTAUuMUf/nAaIip/Vd2xMAR2Xk+9dqlVruWUdsMXeCGiuECchTmOguyPakqdTTA7Mbyd0RyaU86z63iX350cdyYXzfhLUwecQYIZUFh15c7HhGm8YliGj26voZAkczPB8EnaQtnhUIvTkdrys2/TtQy46bCmZlOTuAwM+xQXf0Yo0GkKCU/+bI/S/e7ZkYD+39Riwj/w/Xv+ipdfAH6clPJ/Xs+cOm+MsydKuR7bB3PermsHiv2LKbEnyS7wn7Vev5Q2pdGRRcMQDnXZwYP5YlrEQEp2xdwM2kIvCh2MOk7J0ULniFUpPpdk7Uy2jD72pCZxT4SiiuAUdMLogQIDAQAB",
+    "name": "Sharam Karo 2.0",
+    "version": "1.0.0",
+    "description": "Block pornographic images on Chromium Based Browsers",
+    "permissions": [
+        "<all_urls>",
+        "activeTab",
+        "contextMenus",
+        "storage",
+        "tabs",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "browser_action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "scripts": [
+            "src/background.js"
+        ],
+        "persistent": true
+    },
+    "content_scripts": [{
+        "matches": [
+            "<all_urls>",
+            "http://*/*",
+            "https://*/*"
+        ],
+        "js": [
+            "src/content.js"
+        ],
+        "all_frames": true,
+        "run_at": "document_start"
+    }],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+    "manifest_version": 2,
+    "icons": {
+        "16": "images/blocker_icon.png",
+        "32": "images/blocker_icon.png",
+        "48": "images/blocker_icon.png",
+        "128": "images/blocker_icon.png"
+    }
+}

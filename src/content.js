@@ -60,18 +60,18 @@ function getImageElementsWithSrcUrl(srcUrl) {
     return filtImgElArr;
 }
 
-/**
- * Finds and removes all of the text predictions added by this extension, and
- * removes them from the DOM. Note: This does not undo the containerization.  A
- * cleaner implementation would move the image node back out of the container
- * div.
- */
-function removeTextElements() {
-    const textDivs = document.getElementsByClassName(TEXT_DIV_CLASSNAME);
-    for (const div of textDivs) {
-        div.parentNode.removeChild(div);
-    }
-}
+// /**
+//  * Finds and removes all of the text predictions added by this extension, and
+//  * removes them from the DOM. Note: This does not undo the containerization.  A
+//  * cleaner implementation would move the image node back out of the container
+//  * div.
+//  */
+// function removeTextElements() {
+//     const textDivs = document.getElementsByClassName(TEXT_DIV_CLASSNAME);
+//     for (const div of textDivs) {
+//         div.parentNode.removeChild(div);
+//     }
+// }
 
 MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
@@ -157,15 +157,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// Set up a listener to remove all annotations if the user clicks
-// the left mouse button.  Otherwise, they can easily cloud up the
-// window.
-window.addEventListener('click', clickHandler, false);
-/**
- * Removes text elements from DOM on a left click.
- */
-function clickHandler(mouseEvent) {
-    if (mouseEvent.button == 0) {
-        removeTextElements();
-    }
-}
+// // Set up a listener to remove all annotations if the user clicks
+// // the left mouse button.  Otherwise, they can easily cloud up the
+// // window.
+// window.addEventListener('click', clickHandler, false);
+// /**
+//  * Removes text elements from DOM on a left click.
+//  */
+// function clickHandler(mouseEvent) {
+//     if (mouseEvent.button == 0) {
+//         removeTextElements();
+//     }
+// }
