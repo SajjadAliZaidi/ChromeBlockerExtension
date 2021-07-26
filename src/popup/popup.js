@@ -1,4 +1,4 @@
-chrome.runtime.sendMessage({ message: "blocked-website-count-request" });
+// chrome.runtime.sendMessage({ message: "blocked-website-count-request" });
 // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 //     if (request.message === 'blocked-website-count') {
 //         document.getElementById('blocker-count').textContent = request.countOfBlockedWebsites;
