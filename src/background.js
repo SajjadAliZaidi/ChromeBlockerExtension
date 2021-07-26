@@ -84,22 +84,7 @@ chrome.webRequest?.onBeforeSendHeaders.addListener(
 
 // Code to commuicate to popup js with count of blocked websites
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.message === 'blocked-website-count-request') {
-        if (typeof chrome.app.isInstalled !== 'undefined') {
-            let blocking_stats = localStorage.getItem('sharam-karo-stats');
-            blocking_stats = JSON.parse(blocking_stats);
-            console.log(`stats: ${blocking_stats}`);
-            let countOfBlockedWebsites = 0;
-            if (blocking_stats.blockedSites) {
-                countOfBlockedWebsites = blocking_stats.blockedSites.reduce(function countTotalBlockedWebsites(sum, curr_site) {
-                    // console.log(Object.keys(curr_site)[0]);
-                    return sum + curr_site[Object.keys(curr_site)[0]];
-                }, 0);
-            }
-            console.log(`sending: ${countOfBlockedWebsites}`);
-            chrome.runtime.sendMessage({ message: "blocked-website-count", countOfBlockedWebsites });
-        }
-    } else if (request.message === 'scan-image') {
+    if (request.message === 'scan-image') {
         imageClassifier.analyzeImage(request.imgUrl, sender.tab.id);
     } else if (request.message === 'increase-blocked-image-count') {
         incrementBlockedImageCount();
